@@ -7,5 +7,5 @@
 - convox deploy
 
 # Running locally
-- Proxy port 9000 in VBox on OS X
+- Proxy port 443 in VBox on OS X
 - convox start
