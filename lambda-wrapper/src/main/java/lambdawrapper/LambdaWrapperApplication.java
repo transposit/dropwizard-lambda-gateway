@@ -50,7 +50,7 @@ public class LambdaWrapperApplication extends Application<LambdaWrapperConfigura
         Resource.Builder resourceBuilder = Resource.builder();
         resourceBuilder.path(c.path);
         ResourceMethod.Builder methodBuilder = resourceBuilder.addMethod("POST");
-        LambdaExecutor executor = new LambdaExecutor(configuration.dev, c);
+        LambdaExecutor executor = new LambdaExecutor(configuration.dev, c, configuration.hotLoad);
         methodBuilder.consumes(MediaType.APPLICATION_JSON)
                 .produces(MediaType.APPLICATION_JSON)
                 .handledBy(new Inflector<ContainerRequestContext, Object>() {

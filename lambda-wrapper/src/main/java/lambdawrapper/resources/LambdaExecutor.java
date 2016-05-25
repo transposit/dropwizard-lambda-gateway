@@ -23,30 +23,45 @@ import java.net.URLClassLoader;
  */
 public class LambdaExecutor {
   private AWSLambdaClient client;
-  private Method method;
+  private Method methodInstance;
   private String functionName;
   private Boolean dev;
+  private LambdaConfig config;
+  private Boolean hotLoad;
 
-  public LambdaExecutor(Boolean dev, LambdaConfig config) throws MalformedURLException, ClassNotFoundException, NoSuchMethodException {
+  public LambdaExecutor(Boolean dev, LambdaConfig config, boolean hotLoad)
+          throws MalformedURLException, ClassNotFoundException, NoSuchMethodException {
     this.dev = dev;
+    this.config = config;
+    this.hotLoad = hotLoad;
     this.functionName = config.deployedFunction;
-    if (dev) {
-      File jarFile = new File(config.jarLoc);
-      URL fileURL = jarFile.toURI().toURL();
-      String jarURL = "jar:" + fileURL + "!/";
-      URL urls[] = {new URL(jarURL)};
-      URLClassLoader ucl = new URLClassLoader(urls);
-      method = Class.forName(config.className, true, ucl)
-              .getMethod(config.method, InputStream.class, OutputStream.class, Context.class);
+    if (dev && !hotLoad) {
+      methodInstance = getMethodInstance(getUrlClassLoader());
     } else {
       client = new AWSLambdaClient();
       client.setEndpoint("https://lambda.us-west-2.amazonaws.com");
     }
   }
 
+  private Method getMethodInstance(URLClassLoader ucl) throws MalformedURLException, NoSuchMethodException, ClassNotFoundException {
+    return Class.forName(config.className, true, ucl)
+            .getMethod(config.method, InputStream.class, OutputStream.class, Context.class);
+  }
+
+  private URLClassLoader getUrlClassLoader() throws MalformedURLException {
+    File jarFile = new File(config.jarLoc);
+    URL fileURL = jarFile.toURI().toURL();
+    String jarURL = "jar:" + fileURL + "!/";
+    URL urls[] = {new URL(jarURL)};
+    return new URLClassLoader(urls);
+  }
+
   private void runLocal(InputStream inputStream, OutputStream outputStream) {
     try {
+      URLClassLoader ucl = getUrlClassLoader();
+      Method method = hotLoad ? getMethodInstance(ucl) : this.methodInstance;
       method.invoke(null, inputStream, outputStream, new FakeContext(functionName));
+      ucl.close();
     } catch (Exception e) {
       e.printStackTrace();
     }
