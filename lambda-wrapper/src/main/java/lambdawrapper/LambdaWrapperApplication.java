@@ -48,7 +48,7 @@ public class LambdaWrapperApplication extends Application<LambdaWrapperConfigura
     configs.stream().forEach(c -> {
       try {
         Resource.Builder resourceBuilder = Resource.builder();
-        resourceBuilder.path("test");
+        resourceBuilder.path(c.path);
         ResourceMethod.Builder methodBuilder = resourceBuilder.addMethod("POST");
         LambdaExecutor executor = new LambdaExecutor(configuration.dev, c);
         methodBuilder.consumes(MediaType.APPLICATION_JSON)
