@@ -29,6 +29,7 @@ public class LambdaExecutor {
 
   public LambdaExecutor(Boolean dev, LambdaConfig config) throws MalformedURLException, ClassNotFoundException, NoSuchMethodException {
     this.dev = dev;
+    this.functionName = config.deployedFunction;
     if (dev) {
       File jarFile = new File(config.jarLoc);
       URL fileURL = jarFile.toURI().toURL();
@@ -38,7 +39,6 @@ public class LambdaExecutor {
       method = Class.forName(config.className, true, ucl)
               .getMethod(config.method, InputStream.class, OutputStream.class, Context.class);
     } else {
-      this.functionName = config.deployedFunction;
       client = new AWSLambdaClient();
       client.setEndpoint("https://lambda.us-west-2.amazonaws.com");
     }
@@ -46,7 +46,7 @@ public class LambdaExecutor {
 
   private void runLocal(InputStream inputStream, OutputStream outputStream) {
     try {
-      method.invoke(null, inputStream, outputStream, null);
+      method.invoke(null, inputStream, outputStream, new FakeContext(functionName));
     } catch (Exception e) {
       e.printStackTrace();
     }
