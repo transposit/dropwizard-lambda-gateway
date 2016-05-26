@@ -1,0 +1,21 @@
+[
+  {
+    "path": "/test",
+    "jarLoc": "/Users/tina/.m2/repository/name/monkey/test/0.0.1-SNAPSHOT/test-0.0.1-SNAPSHOT.jar",
+    "className": "TestMain",
+    "lambdaMethod": "handle",
+    "deployedFunction": "test",
+    "requestType": "application/json",
+    "responseType": "application/json",
+    "methodType": "POST"
+  },
+  {
+    "path": "/test2",
+    "jarLoc": "/Users/tina/.m2/repository/name/monkey/test/0.0.1-SNAPSHOT/test-0.0.1-SNAPSHOT.jar",
+    "className": "TestMain",
+    "lambdaMethod": "handleGet",
+    "deployedFunction": "test",
+    "responseType": "text/html",
+    "methodType": "GET"
+  }
+]

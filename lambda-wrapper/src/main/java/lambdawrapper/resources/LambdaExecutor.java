@@ -62,7 +62,7 @@ public class LambdaExecutor {
       URLClassLoader ucl = getUrlClassLoader();
       Method method = hotLoad ? getMethodInstance(ucl) : this.methodInstance;
       method.invoke(null, inputStream, outputStream, new FakeContext(functionName));
-      ucl.close();
+      if (ucl != null) ucl.close();
     } catch (Exception e) {
       e.printStackTrace();
     }

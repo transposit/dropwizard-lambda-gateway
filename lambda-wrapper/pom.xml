@@ -6,8 +6,13 @@
 
   <name>LambdaWrapper</name>
   <artifactId>lambda-wrapper</artifactId>
-  <groupId>name.monkey</groupId>
-  <version>0.0.1-SNAPSHOT</version>
+
+  <parent>
+    <groupId>name.monkey</groupId>
+    <artifactId>parent</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
 
   <prerequisites>
     <maven>3.0.0</maven>

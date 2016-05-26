@@ -10,8 +10,8 @@ Create a file lambda-wrapper/src/main/resources/GatwayConfig.json that specifies
   {
     "path": "/test",
     "jarLoc": "/Users/.../test-0.0.1-SNAPSHOT.jar",
-    "className": "TestMain",
-    "lambdaMethod": "handle",
+    "className": "ExampleLambda",
+    "lambdaMethod": "handlePost",
     "deployedFunction": "test",
     "requestType": "application/json",
     "responseType": "application/json",
@@ -20,7 +20,7 @@ Create a file lambda-wrapper/src/main/resources/GatwayConfig.json that specifies
   {
     "path": "/test2",
     "jarLoc": "/Users/.../test-0.0.1-SNAPSHOT.jar",
-    "className": "TestMain",
+    "className": "ExampleLambda",
     "lambdaMethod": "handleGet",
     "deployedFunction": "test",
     "responseType": "text/html",
@@ -35,6 +35,11 @@ From within the lambda-wrapper directory:
 Build: `mvn install`
 
 Run as prod or dev: `java -jar target/lambda-wrapper-0.0.1-SNAPSHOT.jar server dev.yml`
+
+## Embedding lambdas for development and easier debugging
+The `example` project shows a simple maven project configured to load the lambdas locally as a maven dependency.  Notice in the config you can leave out the `jarLoc` to load the class from the main jar.  
+
+If you use Paw (https://luckymarmot.com/paw) for easy testing, you can use the `test.paw` file as a convenience.
 
 # Using Convox to manage your application
 ## Setting up Convox
