@@ -44,11 +44,12 @@ public class LambdaExecutor {
   }
 
   private Method getMethodInstance(URLClassLoader ucl) throws MalformedURLException, NoSuchMethodException, ClassNotFoundException {
-    return Class.forName(config.className, true, ucl)
-            .getMethod(config.lambdaMethod, InputStream.class, OutputStream.class, Context.class);
+    Class<?> aClass = ucl == null ? Class.forName(config.className) : Class.forName(config.className, true, ucl);
+    return aClass.getMethod(config.lambdaMethod, InputStream.class, OutputStream.class, Context.class);
   }
 
   private URLClassLoader getUrlClassLoader() throws MalformedURLException {
+    if (config.jarLoc == null) return null;
     File jarFile = new File(config.jarLoc);
     URL fileURL = jarFile.toURI().toURL();
     String jarURL = "jar:" + fileURL + "!/";
