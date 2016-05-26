@@ -5,7 +5,7 @@ import io.dropwizard.Configuration;
 
 public class LambdaWrapperConfiguration extends Configuration {
   @JsonInclude
-  public Boolean dev;
+  public Boolean dev = false;
 
   @JsonInclude
   public Boolean hotLoad = false;

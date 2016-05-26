@@ -1,8 +1,8 @@
 [
   {
     "path": "/test",
-    "className": "TestMain",
-    "lambdaMethod": "handle",
+    "className": "ExampleLambda",
+    "lambdaMethod": "handlePost",
     "deployedFunction": "test",
     "requestType": "application/json",
     "responseType": "application/json",
@@ -10,7 +10,7 @@
   },
   {
     "path": "/test2",
-    "className": "TestMain",
+    "className": "ExampleLambda",
     "lambdaMethod": "handleGet",
     "deployedFunction": "test",
     "responseType": "text/html",

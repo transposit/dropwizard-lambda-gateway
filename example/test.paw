@@ -80,7 +80,7 @@
         <relationship name="variable" type="1/1" destination="LMENVIRONMENTVARIABLE" idrefs="z102"></relationship>
     </object>
     <object type="LMREQUEST" id="z105">
-        <attribute name="body" type="string">["{\\n  \\"foo\\": \\"bar\\"\\n}"]</attribute>
+        <attribute name="body" type="string">["{\\n  \\"foo2\\": \\"bar2\\"\\n}"]</attribute>
         <attribute name="uuid" type="string">888CC5B4-DD27-4284-9981-F5A68901F529</attribute>
         <attribute name="url" type="string">[{"data":{"environmentVariable":"9D9977FA-D719-4D98-85F2-42DFEEE9BDEA"},"identifier":"com.luckymarmot.EnvironmentVariableDynamicValue"},"\\/test"]</attribute>
         <attribute name="storecookies" type="bool">1</attribute>
@@ -93,7 +93,7 @@
         <attribute name="name" type="string">Test Post</attribute>
         <relationship name="parent" type="0/1" destination="LMREQUESTTREEITEM"></relationship>
         <relationship name="children" type="0/0" destination="LMREQUESTTREEITEM"></relationship>
-        <relationship name="headers" type="0/0" destination="LMKEYVALUE" idrefs="z110 z107"></relationship>
+        <relationship name="headers" type="0/0" destination="LMKEYVALUE" idrefs="z107 z110"></relationship>
     </object>
     <object type="LMCOOKIEJAR" id="z106">
         <attribute name="uuid" type="string">EF7C2987-923E-4209-B4AE-83170FBAF193</attribute>
