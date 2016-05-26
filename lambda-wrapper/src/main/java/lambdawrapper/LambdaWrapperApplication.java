@@ -49,10 +49,10 @@ public class LambdaWrapperApplication extends Application<LambdaWrapperConfigura
       try {
         Resource.Builder resourceBuilder = Resource.builder();
         resourceBuilder.path(c.path);
-        ResourceMethod.Builder methodBuilder = resourceBuilder.addMethod("POST");
+        ResourceMethod.Builder methodBuilder = resourceBuilder.addMethod(c.methodType);
         LambdaExecutor executor = new LambdaExecutor(configuration.dev, c, configuration.hotLoad);
-        methodBuilder.consumes(MediaType.APPLICATION_JSON)
-                .produces(MediaType.APPLICATION_JSON)
+        if (c.requestType != null) methodBuilder.consumes(c.requestType);
+        methodBuilder.produces(c.responseType)
                 .handledBy(new Inflector<ContainerRequestContext, Object>() {
                   @Override
                   public Object apply(ContainerRequestContext containerRequestContext) {

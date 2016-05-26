@@ -11,8 +11,20 @@ Create a file lambda-wrapper/src/main/resources/GatwayConfig.json that specifies
     "path": "/test",
     "jarLoc": "/Users/.../test-0.0.1-SNAPSHOT.jar",
     "className": "TestMain",
-    "method": "handle",
-    "deployedFunction": "test-lambda"
+    "lambdaMethod": "handle",
+    "deployedFunction": "test",
+    "requestType": "application/json",
+    "responseType": "application/json",
+    "methodType": "POST"
+  },
+  {
+    "path": "/test2",
+    "jarLoc": "/Users/.../test-0.0.1-SNAPSHOT.jar",
+    "className": "TestMain",
+    "lambdaMethod": "handleGet",
+    "deployedFunction": "test",
+    "responseType": "text/html",
+    "methodType": "GET"
   }
 ]
 ```

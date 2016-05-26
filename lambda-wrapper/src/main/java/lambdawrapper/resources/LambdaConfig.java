@@ -7,6 +7,10 @@ public class LambdaConfig {
   public String path;
   public String jarLoc;
   public String className;
-  public String method;
+  public String lambdaMethod;
   public String deployedFunction;
+
+  public String requestType;
+  public String responseType;
+  public String methodType;
 }
