@@ -44,7 +44,7 @@
     <dependency>
       <groupId>name.monkey</groupId>
       <artifactId>lambda-wrapper</artifactId>
-      <version>${parent.version}</version>
+      <version>${project.parent.version}</version>
     </dependency>
   </dependencies>
 
