@@ -47,5 +47,4 @@ public class LambdaWrapper {
     result.put("git", mapper.readValue(stream, ObjectNode.class));
     return Response.ok(result).build();
   }
-
 }

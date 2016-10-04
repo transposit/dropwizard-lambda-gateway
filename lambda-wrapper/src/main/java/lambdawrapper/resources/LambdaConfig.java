@@ -13,4 +13,6 @@ public class LambdaConfig {
   public String requestType;
   public String responseType;
   public String methodType;
+
+  public boolean redirect = false;
 }

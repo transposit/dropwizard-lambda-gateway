@@ -14,13 +14,18 @@ import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
 
 import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.security.GeneralSecurityException;
 import java.util.List;
+import java.util.Map;
 
 public class LambdaWrapperApplication extends Application<LambdaWrapperConfiguration> {
+  public static ObjectMapper mapper = new ObjectMapper();
+
   public static void main(final String[] args) throws Exception {
     new LambdaWrapperApplication().run(args);
   }
@@ -51,11 +56,24 @@ public class LambdaWrapperApplication extends Application<LambdaWrapperConfigura
         ResourceMethod.Builder methodBuilder = resourceBuilder.addMethod(c.methodType);
         LambdaExecutor executor = new LambdaExecutor(configuration.dev, c, configuration.hotLoad);
         if (c.requestType != null) methodBuilder.consumes(c.requestType);
-        methodBuilder.produces(c.responseType)
-                .handledBy(new Inflector<ContainerRequestContext, Object>() {
+        if (c.responseType != null) methodBuilder.produces(c.responseType);
+        methodBuilder.handledBy(new Inflector<ContainerRequestContext, Object>() {
                   @Override
                   public Object apply(ContainerRequestContext containerRequestContext) {
-                    return executor.run(containerRequestContext.getEntityStream());
+                    String result = executor.run(containerRequestContext.getEntityStream());
+                    if (c.redirect) {
+                      Map<String, Object> resultMap = null;
+                      try {
+                        resultMap = mapper.readValue(result, new TypeReference<Map<String, Object>>() {
+                        });
+                      } catch (IOException e) {
+                        return Response.serverError();
+                      }
+
+                      String location = (String) resultMap.get("location");
+                      return Response.temporaryRedirect(URI.create(location)).build();
+                    }
+                    return result;
                   }
                 });
         resourceConfig.registerResources(resourceBuilder.build());
