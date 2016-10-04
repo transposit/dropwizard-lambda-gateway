@@ -15,5 +15,13 @@
     "deployedFunction": "test",
     "responseType": "text/html",
     "methodType": "GET"
+  },
+  {
+    "path": "/redirect",
+    "className": "ExampleLambda",
+    "lambdaMethod": "handleRedirect",
+    "deployedFunction": "testRedirect",
+    "methodType": "GET",
+    "redirect": true
   }
 ]

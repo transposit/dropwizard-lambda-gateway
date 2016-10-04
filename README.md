@@ -3,7 +3,7 @@ This is a simple dropwizard container that can be configured to run either a loc
 
 
 ## Configure your lambdas
-Create a file lambda-wrapper/src/main/resources/GatwayConfig.json that specifies the local and/or deployed versions of your lambda.  Below is an example.
+Create a file lambda-wrapper/src/main/resources/GatwayConfig.json that specifies the local and/or deployed versions of your lambda.  Below is an example or see `https://github.com/kmonkeyjam/dropwizard-lambda-gateway/blob/master/example/src/main/resources/GatewayConfig.json`.
 
 ```
 [

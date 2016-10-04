@@ -6,9 +6,8 @@ import com.amazonaws.services.lambda.model.InvokeResult;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.util.IOUtils;
 
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -76,20 +75,17 @@ public class LambdaExecutor {
     return new String(result.getPayload().array());
   }
 
-  public Object run(InputStream input) {
+  public String run(InputStream input) {
     if (dev) {
-      return new StreamingOutput() {
-        @Override
-        public void write(OutputStream outputStream) throws IOException, WebApplicationException {
-          runLocal(input, outputStream);
-        }
-      };
+      ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+      runLocal(input, outputStream);
+      return new String(outputStream.toByteArray());
     } else {
       try {
         return invokeLambda(input);
       } catch (IOException e) {
         e.printStackTrace();
-        return Response.ok(e.getMessage()).build();
+        return e.getMessage();
       }
     }
   }

@@ -37,4 +37,11 @@ public class ExampleLambda {
     mustache.execute(writer, new HashMap<>());
     writer.flush();
   }
+
+  public static void handleRedirect(InputStream inputStream, OutputStream outputStream, Context context)
+          throws IOException, ExecutionException, InterruptedException {
+    Map<String, String> input = new HashMap<>();
+    input.put("location", "http://www.github.com");
+    mapper.writeValue(outputStream, input);
+  }
 }
