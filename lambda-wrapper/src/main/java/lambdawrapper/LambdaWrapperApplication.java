@@ -1,6 +1,8 @@
 package lambdawrapper;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
@@ -16,11 +18,13 @@ import org.glassfish.jersey.server.model.ResourceMethod;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.security.GeneralSecurityException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -62,23 +66,28 @@ public class LambdaWrapperApplication extends Application<LambdaWrapperConfigura
                   @Override
                   public Object apply(ContainerRequestContext containerRequestContext) {
                     try {
-                      String result = executor.run(containerRequestContext.getEntityStream());
+                      InputStream entityStream = containerRequestContext.getEntityStream();
+
+                      if (c.passthroughQueryParams) {
+                        MultivaluedMap<String, String> headers = containerRequestContext.getUriInfo().getQueryParameters();
+                        Map<String, Object> requestJson = c.requestType != null && c.requestType.equals("application/json") ?
+                                mapper.readValue(entityStream, new TypeReference<Map<String, Object>>() {
+                                }) : new HashMap<>();
+                        requestJson.put("querystring", headers);
+                        entityStream = new ByteArrayInputStream(mapper.writeValueAsBytes(requestJson));
+                      }
+                      String result = executor.run(entityStream);
                       if (c.redirect) {
                         Map<String, Object> resultMap = parseResult(result);
                         String location = (String) resultMap.get("location");
                         return Response.temporaryRedirect(URI.create(location)).build();
-                      } else if (c.passthroughQueryParams) {
-                        MultivaluedMap<String, String> headers = containerRequestContext.getUriInfo().getQueryParameters();
-                        Map<String, Object> resultMap = parseResult(result);
-                        resultMap.put("querystring", headers);
-                        return resultMap;
                       }
                       return result;
                     } catch (IOException e) {
                       return Response.serverError();
                     }
                   }
-                });
+        });
         resourceConfig.registerResources(resourceBuilder.build());
       } catch (NoSuchMethodException | MalformedURLException | ClassNotFoundException e) {
         e.printStackTrace();

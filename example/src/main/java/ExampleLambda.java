@@ -47,7 +47,8 @@ public class ExampleLambda {
 
   public static void handleQueryParamPassthrough(InputStream inputStream, OutputStream outputStream, Context context)
           throws IOException, ExecutionException, InterruptedException {
-    Map<String, Object> params = new HashMap<>();
+    Map<String, Object> params = mapper.readValue(inputStream, new TypeReference<Map<String, Object>>() {
+    });
     mapper.writeValue(outputStream, params);
   }
 }
