@@ -44,4 +44,10 @@ public class ExampleLambda {
     input.put("location", "http://www.github.com");
     mapper.writeValue(outputStream, input);
   }
+
+  public static void handleQueryParamPassthrough(InputStream inputStream, OutputStream outputStream, Context context)
+          throws IOException, ExecutionException, InterruptedException {
+    Map<String, Object> params = new HashMap<>();
+    mapper.writeValue(outputStream, params);
+  }
 }

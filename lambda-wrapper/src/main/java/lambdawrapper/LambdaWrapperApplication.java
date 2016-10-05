@@ -14,6 +14,7 @@ import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
 
 import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
@@ -60,26 +61,33 @@ public class LambdaWrapperApplication extends Application<LambdaWrapperConfigura
         methodBuilder.handledBy(new Inflector<ContainerRequestContext, Object>() {
                   @Override
                   public Object apply(ContainerRequestContext containerRequestContext) {
-                    String result = executor.run(containerRequestContext.getEntityStream());
-                    if (c.redirect) {
-                      Map<String, Object> resultMap = null;
-                      try {
-                        resultMap = mapper.readValue(result, new TypeReference<Map<String, Object>>() {
-                        });
-                      } catch (IOException e) {
-                        return Response.serverError();
+                    try {
+                      String result = executor.run(containerRequestContext.getEntityStream());
+                      if (c.redirect) {
+                        Map<String, Object> resultMap = parseResult(result);
+                        String location = (String) resultMap.get("location");
+                        return Response.temporaryRedirect(URI.create(location)).build();
+                      } else if (c.passthroughQueryParams) {
+                        MultivaluedMap<String, String> headers = containerRequestContext.getUriInfo().getQueryParameters();
+                        Map<String, Object> resultMap = parseResult(result);
+                        resultMap.put("querystring", headers);
+                        return resultMap;
                       }
-
-                      String location = (String) resultMap.get("location");
-                      return Response.temporaryRedirect(URI.create(location)).build();
+                      return result;
+                    } catch (IOException e) {
+                      return Response.serverError();
                     }
-                    return result;
                   }
                 });
         resourceConfig.registerResources(resourceBuilder.build());
       } catch (NoSuchMethodException | MalformedURLException | ClassNotFoundException e) {
         e.printStackTrace();
       }
+    });
+  }
+
+  private Map<String, Object> parseResult(String result) throws IOException {
+    return mapper.readValue(result, new TypeReference<Map<String, Object>>() {
     });
   }
 }

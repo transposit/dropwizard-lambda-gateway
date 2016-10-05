@@ -15,4 +15,5 @@ public class LambdaConfig {
   public String methodType;
 
   public boolean redirect = false;
+  public boolean passthroughQueryParams = false;
 }
