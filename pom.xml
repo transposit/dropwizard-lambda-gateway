@@ -10,7 +10,7 @@
   <description>Parent module for the lambda wrapper</description>
 
   <properties>
-    <aws.version>1.10.42</aws.version>
+    <aws.version>1.11.37</aws.version>
   </properties>
 
   <modules>

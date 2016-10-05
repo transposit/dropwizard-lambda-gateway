@@ -23,7 +23,6 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <dropwizard.version>0.9.1</dropwizard.version>
     <mainClass>lambdawrapper.LambdaWrapperApplication</mainClass>
-    <aws.version>1.10.42</aws.version>
   </properties>
 
   <dependencyManagement>
