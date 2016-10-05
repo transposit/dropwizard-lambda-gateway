@@ -22,7 +22,6 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <dropwizard.version>0.9.1</dropwizard.version>
     <mainClass>lambdawrapper.LambdaWrapperApplication</mainClass>
-    <aws.version>1.11.37</aws.version>
   </properties>
 
   <dependencyManagement>
@@ -41,11 +40,6 @@
     <dependency>
       <groupId>io.dropwizard</groupId>
       <artifactId>dropwizard-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.amazonaws</groupId>
-      <artifactId>aws-java-sdk</artifactId>
-      <version>${aws.version}</version>
     </dependency>
     <dependency>
       <groupId>javax.mail</groupId>
