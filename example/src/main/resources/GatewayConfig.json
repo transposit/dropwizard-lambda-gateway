@@ -23,5 +23,14 @@
     "deployedFunction": "testRedirect",
     "methodType": "GET",
     "redirect": true
+  },
+  {
+    "path": "/passthrough",
+    "className": "ExampleLambda",
+    "lambdaMethod": "handleQueryParamPassthrough",
+    "deployedFunction": "testPassthrough",
+    "passthroughQueryParams": true,
+    "responseType": "application/json",
+    "methodType": "GET"
   }
 ]
