@@ -16,4 +16,5 @@ public class LambdaConfig {
 
   public boolean redirect = false;
   public boolean passthroughQueryParams = false;
+  public boolean passthroughHeaders = false;
 }

@@ -67,16 +67,19 @@ public class LambdaWrapperApplication extends Application<LambdaWrapperConfigura
                   public Object apply(ContainerRequestContext containerRequestContext) {
                     try {
                       InputStream entityStream = containerRequestContext.getEntityStream();
+                      Map<String, Object> requestJson = c.requestType != null && c.requestType.equals("application/json") ?
+                              mapper.readValue(entityStream, new TypeReference<Map<String, Object>>() {
+                              }) : new HashMap<>();
 
                       if (c.passthroughQueryParams) {
-                        MultivaluedMap<String, String> headers = containerRequestContext.getUriInfo().getQueryParameters();
-                        Map<String, Object> requestJson = c.requestType != null && c.requestType.equals("application/json") ?
-                                mapper.readValue(entityStream, new TypeReference<Map<String, Object>>() {
-                                }) : new HashMap<>();
-                        requestJson.put("querystring", headers);
-                        entityStream = new ByteArrayInputStream(mapper.writeValueAsBytes(requestJson));
+                        MultivaluedMap<String, String> params = containerRequestContext.getUriInfo().getQueryParameters();
+                        requestJson.put("querystring", params);
                       }
-                      String result = executor.run(entityStream);
+                      if (c.passthroughHeaders) {
+                        MultivaluedMap<String, String> headers = containerRequestContext.getHeaders();
+                        requestJson.put("header", headers);
+                      }
+                      String result = executor.run(new ByteArrayInputStream(mapper.writeValueAsBytes(requestJson)));
                       if (c.redirect) {
                         Map<String, Object> resultMap = parseResult(result);
                         String location = (String) resultMap.get("location");
