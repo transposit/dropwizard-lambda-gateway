@@ -30,6 +30,7 @@
     "lambdaMethod": "handleQueryParamPassthrough",
     "deployedFunction": "testPassthrough",
     "passthroughQueryParams": true,
+    "passthroughHeaders": true,
     "responseType": "application/json",
     "methodType": "GET"
   }
