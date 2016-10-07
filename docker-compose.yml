@@ -1,7 +1,0 @@
-main:
-  build: .
-  labels:
-    - convox.port.443.protocol=https
-    - convox.port.443.secure=true
-  ports:
-  - 443:8080
