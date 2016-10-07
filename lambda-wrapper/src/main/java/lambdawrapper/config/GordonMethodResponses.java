@@ -1,0 +1,11 @@
+package lambdawrapper.config;
+
+import java.util.Map;
+
+/**
+ * Created by ahl on 10/6/16.
+ */
+public class GordonMethodResponses {
+  public int code;
+  public Map<String, Boolean> parameters;
+}

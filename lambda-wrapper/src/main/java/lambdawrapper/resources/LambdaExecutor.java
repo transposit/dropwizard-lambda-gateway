@@ -22,17 +22,17 @@ import java.net.URLClassLoader;
 public class LambdaExecutor {
   private AWSLambdaClient client;
   private Method methodInstance;
-  private String functionName;
   private Boolean dev;
-  private LambdaConfig config;
   private Boolean hotLoad;
+  private String methodName;
+  private String lambdaName;
 
-  public LambdaExecutor(Boolean dev, LambdaConfig config, boolean hotLoad)
+  public LambdaExecutor(Boolean dev, boolean hotLoad, String methodName, String lambdaName)
           throws MalformedURLException, ClassNotFoundException, NoSuchMethodException {
     this.dev = dev;
-    this.config = config;
     this.hotLoad = hotLoad;
-    this.functionName = config.deployedFunction;
+    this.lambdaName = lambdaName;
+    this.methodName = methodName;
     if (dev && !hotLoad) {
       methodInstance = getMethodInstance(getUrlClassLoader());
     } else {
@@ -42,24 +42,28 @@ public class LambdaExecutor {
   }
 
   private Method getMethodInstance(URLClassLoader ucl) throws MalformedURLException, NoSuchMethodException, ClassNotFoundException {
-    Class<?> aClass = ucl == null ? Class.forName(config.className) : Class.forName(config.className, true, ucl);
-    return aClass.getMethod(config.lambdaMethod, InputStream.class, OutputStream.class, Context.class);
+    String[] parts = this.methodName.split("::");
+    Class<?> aClass = ucl == null ? Class.forName(parts[0]) : Class.forName(parts[0], true, ucl);
+    return aClass.getMethod(parts[1], InputStream.class, OutputStream.class, Context.class);
   }
 
   private URLClassLoader getUrlClassLoader() throws MalformedURLException {
+    return null;
+    /*
     if (config.jarLoc == null) return null;
     File jarFile = new File(config.jarLoc);
     URL fileURL = jarFile.toURI().toURL();
     String jarURL = "jar:" + fileURL + "!/";
     URL urls[] = {new URL(jarURL)};
     return new URLClassLoader(urls);
+    */
   }
 
   private void runLocal(InputStream inputStream, OutputStream outputStream) {
     try {
       URLClassLoader ucl = getUrlClassLoader();
       Method method = hotLoad ? getMethodInstance(ucl) : this.methodInstance;
-      method.invoke(null, inputStream, outputStream, new FakeContext(functionName));
+      method.invoke(null, inputStream, outputStream, new FakeContext(this.lambdaName));
       if (ucl != null) ucl.close();
     } catch (Exception e) {
       e.printStackTrace();
@@ -68,7 +72,7 @@ public class LambdaExecutor {
 
   private String invokeLambda(InputStream input) throws IOException {
     InvokeRequest request = new InvokeRequest();
-    request.setFunctionName(functionName);
+    request.setFunctionName(this.lambdaName);
     request.setPayload(IOUtils.toString(input));
     InvokeResult result = client.invoke(request);
     return new String(result.getPayload().array());
