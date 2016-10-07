@@ -1,43 +1,23 @@
 lambdas:
   test:
-    code: XXX
     runtime: java8
-    build:
-      - XXX
     handler: ExampleLambda::handlePost
-    description: XXX
-    role: XXX
 
   test2:
-    code: XXX
     runtime: java8
-    build:
-      - XXX
     handler: ExampleLambda::handleGet
-    description: XXX
-    role: XXX
 
   redirect:
-    code: XXX
     runtime: java8
-    build:
-      - XXX
     handler: ExampleLambda::handleRedirect
-    description: XXX
-    role: XXX
 
   passthrough:
-    code: XXX
     runtime: java8
-    build:
-      - XXX
     handler: ExampleLambda::handleQueryParamPassthrough
-    description: XXX
-    role: XXX
 
 apigateway:
   api:
-    description: XXX
+    description: my apis
     resources:
       /test:
         methods: POST
