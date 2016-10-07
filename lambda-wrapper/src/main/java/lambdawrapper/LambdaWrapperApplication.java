@@ -8,8 +8,8 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import lambdawrapper.config.GordonConfig;
-import lambdawrapper.config.GordonIntegrationResponse;
+import lambdawrapper.config.Config;
+import lambdawrapper.config.IntegrationResponse;
 import lambdawrapper.resources.LambdaExecutor;
 import lambdawrapper.resources.LambdaWrapper;
 import lambdawrapper.template.Input;
@@ -59,7 +59,7 @@ public class LambdaWrapperApplication extends Application<LambdaWrapperConfigura
     InputStream inputStream = LambdaWrapperApplication.class.getClassLoader().getResourceAsStream("settings.yml");
     ObjectMapper yamlMapper = new ObjectMapper(new YAMLFactory());
     //yamlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    GordonConfig config = yamlMapper.readValue(inputStream, GordonConfig.class);
+    Config config = yamlMapper.readValue(inputStream, Config.class);
 
     // Velocity setup.
     Velocity.init();
@@ -128,7 +128,7 @@ public class LambdaWrapperApplication extends Application<LambdaWrapperConfigura
               if (resource.integration.responses != null && !resource.integration.responses.isEmpty()) {
                 Map<String, Object> body = parseResult(result);
                 String errorMessage = (String) body.getOrDefault("errorMessage", "");
-                Optional<GordonIntegrationResponse> response = resource.integration.responses.stream()
+                Optional<IntegrationResponse> response = resource.integration.responses.stream()
                         .filter(resp -> Pattern.matches(resp.pattern, errorMessage))
                         .findFirst();
 
