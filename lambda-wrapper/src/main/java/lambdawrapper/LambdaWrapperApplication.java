@@ -16,10 +16,12 @@ import lambdawrapper.template.Input;
 import lambdawrapper.template.Util;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
+import org.glassfish.jersey.process.Inflector;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.model.Resource;
 import org.glassfish.jersey.server.model.ResourceMethod;
 
+import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
@@ -96,52 +98,56 @@ public class LambdaWrapperApplication extends Application<LambdaWrapperConfigura
           // TODO this should configurable -- need to figure out how API Gateway does it.
           methodBuilder.produces("application/json");
 
-          methodBuilder.handledBy(containerRequestContext -> {
-            try {
-              InputStream entityStream = containerRequestContext.getEntityStream();
+          methodBuilder.handledBy(new Inflector<ContainerRequestContext, Object>() {
+            @Override
+            public Object apply(ContainerRequestContext containerRequestContext) {
 
-              if (resource.request_templates != null && !resource.request_templates.isEmpty()) {
-                String contentType = containerRequestContext.getHeaderString(HttpHeaders.CONTENT_TYPE);
-                if (contentType == null)
-                  contentType = "application/json";
+              try {
+                InputStream entityStream = containerRequestContext.getEntityStream();
 
-                String template = resource.request_templates.get(contentType);
-                if (template != null) {
-                  Input.context.set(containerRequestContext);
+                if (resource.request_templates != null && !resource.request_templates.isEmpty()) {
+                  String contentType = containerRequestContext.getHeaderString(HttpHeaders.CONTENT_TYPE);
+                  if (contentType == null)
+                    contentType = "application/json";
 
-                  StringWriter w = new StringWriter();
-                  Velocity.evaluate(velocityContext, w, "velocity", template);
-                  System.out.println(w.toString());
-                  entityStream = new StringInputStream(w.toString());
+                  String template = resource.request_templates.get(contentType);
+                  if (template != null) {
+                    Input.context.set(containerRequestContext);
 
-                  Input.context.remove();
+                    StringWriter w = new StringWriter();
+                    Velocity.evaluate(velocityContext, w, "velocity", template);
+                    System.out.println(w.toString());
+                    entityStream = new StringInputStream(w.toString());
+
+                    Input.context.remove();
+                  }
                 }
-              }
 
-              // TODO AWS API Gateway catches exceptions and packages them up for consumption by the response
-              // integration layer; we can do that if/when we need it.
-              String result = executor.run(entityStream);
+                // TODO AWS API Gateway catches exceptions and packages them up for consumption by the response
+                // integration layer; we can do that if/when we need it.
+                String result = executor.run(entityStream);
 
-              if (resource.integration.responses != null && !resource.integration.responses.isEmpty()) {
-                Map<String, Object> body = parseResult(result);
-                String errorMessage = (String) body.getOrDefault("errorMessage", "");
-                Optional<GordonIntegrationResponse> response = resource.integration.responses.stream()
-                        .filter(resp -> Pattern.matches(resp.pattern, errorMessage))
-                        .findFirst();
+                if (resource.integration.responses != null && !resource.integration.responses.isEmpty()) {
+                  Map<String, Object> body = parseResult(result);
+                  String errorMessage = (String) body.getOrDefault("errorMessage", "");
+                  Optional<GordonIntegrationResponse> response = resource.integration.responses.stream()
+                          .filter(resp -> Pattern.matches(resp.pattern, errorMessage))
+                          .findFirst();
 
-                if (response.isPresent()) {
-                  final Response.ResponseBuilder r = Response.status(response.get().code);
-                  response.get().parameters.forEach((key, value) -> {
-                    r.header(path("method.response.header", key),
-                            body.get(path("integration.response.body", value)));
-                  });
-                  return r.build();
+                  if (response.isPresent()) {
+                    final Response.ResponseBuilder r = Response.status(response.get().code);
+                    response.get().parameters.forEach((key, value) -> {
+                      r.header(path("method.response.header", key),
+                              body.get(path("integration.response.body", value)));
+                    });
+                    return r.build();
+                  }
                 }
-              }
 
-              return result;
-            } catch (IOException e) {
-              return Response.serverError();
+                return result;
+              } catch (IOException e) {
+                return Response.serverError();
+              }
             }
           });
           resourceConfig.registerResources(resourceBuilder.build());
