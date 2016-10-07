@@ -27,7 +27,7 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.net.MalformedURLException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -70,7 +70,7 @@ public class LambdaWrapperApplication extends Application<LambdaWrapperConfigura
 
 
     // Parse settings.yml file
-    // TODO do we need to parse all of them?
+    // TODO do we need to parse multiple files since there may be many specified through Gordon?
     Map<String, String> methods = new HashMap<>();
 
     config.lambdas.forEach((name, c) -> {
@@ -87,73 +87,70 @@ public class LambdaWrapperApplication extends Application<LambdaWrapperConfigura
 
     config.apigateway.forEach((name, api) -> {
       api.resources.forEach((path, resource) -> {
-        try {
-          Resource.Builder resourceBuilder = Resource.builder();
-          resourceBuilder.path(path);
-          ResourceMethod.Builder methodBuilder = resourceBuilder.addMethod(resource.methods);
-          String lambdaName = resource.integration.lambda;
-          LambdaExecutor executor = new LambdaExecutor(configuration.dev, configuration.hotLoad,
-                  methods.get(lambdaName), lambdaName);
+        Resource.Builder resourceBuilder = Resource.builder();
+        resourceBuilder.path(path);
+        ResourceMethod.Builder methodBuilder = resourceBuilder.addMethod(resource.methods);
+        String lambdaName = resource.integration.lambda;
+        LambdaExecutor executor = new LambdaExecutor(methods.get(lambdaName), lambdaName);
 
-          // TODO this should configurable -- need to figure out how API Gateway does it.
-          methodBuilder.produces("application/json");
+        // TODO this should configurable -- need to figure out how API Gateway does it.
+        methodBuilder.produces("application/json");
 
-          methodBuilder.handledBy(new Inflector<ContainerRequestContext, Object>() {
-            @Override
-            public Object apply(ContainerRequestContext containerRequestContext) {
+        methodBuilder.handledBy(new Inflector<ContainerRequestContext, Object>() {
+          @Override
+          public Object apply(ContainerRequestContext containerRequestContext) {
 
-              try {
-                InputStream entityStream = containerRequestContext.getEntityStream();
+            try {
+              InputStream entityStream = containerRequestContext.getEntityStream();
 
-                if (resource.request_templates != null && !resource.request_templates.isEmpty()) {
-                  String contentType = containerRequestContext.getHeaderString(HttpHeaders.CONTENT_TYPE);
-                  if (contentType == null)
-                    contentType = "application/json";
+              if (resource.request_templates != null && !resource.request_templates.isEmpty()) {
+                String contentType = containerRequestContext.getHeaderString(HttpHeaders.CONTENT_TYPE);
+                if (contentType == null)
+                  contentType = "application/json";
 
-                  String template = resource.request_templates.get(contentType);
-                  if (template != null) {
-                    Input.context.set(containerRequestContext);
+                String template = resource.request_templates.get(contentType);
+                if (template != null) {
+                  Input.context.set(containerRequestContext);
 
-                    StringWriter w = new StringWriter();
-                    Velocity.evaluate(velocityContext, w, "velocity", template);
-                    System.out.println(w.toString());
-                    entityStream = new StringInputStream(w.toString());
+                  StringWriter w = new StringWriter();
+                  Velocity.evaluate(velocityContext, w, "velocity", template);
+                  System.out.println(w.toString());
+                  entityStream = new StringInputStream(w.toString());
 
-                    Input.context.remove();
-                  }
+                  Input.context.remove();
                 }
-
-                // TODO AWS API Gateway catches exceptions and packages them up for consumption by the response
-                // integration layer; we can do that if/when we need it.
-                String result = executor.run(entityStream);
-
-                if (resource.integration.responses != null && !resource.integration.responses.isEmpty()) {
-                  Map<String, Object> body = parseResult(result);
-                  String errorMessage = (String) body.getOrDefault("errorMessage", "");
-                  Optional<GordonIntegrationResponse> response = resource.integration.responses.stream()
-                          .filter(resp -> Pattern.matches(resp.pattern, errorMessage))
-                          .findFirst();
-
-                  if (response.isPresent()) {
-                    final Response.ResponseBuilder r = Response.status(response.get().code);
-                    response.get().parameters.forEach((key, value) -> {
-                      r.header(path("method.response.header", key),
-                              body.get(path("integration.response.body", value)));
-                    });
-                    return r.build();
-                  }
-                }
-
-                return result;
-              } catch (IOException e) {
-                return Response.serverError();
               }
+
+              // TODO AWS API Gateway catches exceptions and packages them up for consumption by the response
+              // integration layer; we can do that if/when we need it.
+              String result = executor.run(entityStream);
+
+              if (resource.integration.responses != null && !resource.integration.responses.isEmpty()) {
+                Map<String, Object> body = parseResult(result);
+                String errorMessage = (String) body.getOrDefault("errorMessage", "");
+                Optional<GordonIntegrationResponse> response = resource.integration.responses.stream()
+                        .filter(resp -> Pattern.matches(resp.pattern, errorMessage))
+                        .findFirst();
+
+                if (response.isPresent()) {
+                  final Response.ResponseBuilder r = Response.status(response.get().code);
+                  response.get().parameters.forEach((key, value) -> {
+                    r.header(path("method.response.header", key),
+                            body.get(path("integration.response.body", value)));
+                  });
+                  return r.build();
+                }
+              }
+
+              return result;
+            } catch (IOException | ClassNotFoundException | NoSuchMethodException | IllegalAccessException |
+                    InvocationTargetException e) {
+              e.printStackTrace();
+              return Response.serverError();
             }
-          });
-          resourceConfig.registerResources(resourceBuilder.build());
-        } catch (NoSuchMethodException | MalformedURLException | ClassNotFoundException e) {
-          e.printStackTrace();
-        }
+          }
+        });
+        resourceConfig.registerResources(resourceBuilder.build());
       });
     });
   }
