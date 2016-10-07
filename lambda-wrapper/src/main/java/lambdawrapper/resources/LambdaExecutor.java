@@ -7,13 +7,11 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.util.IOUtils;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.net.URLClassLoader;
 
 /**
